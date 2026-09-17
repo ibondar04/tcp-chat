@@ -43,44 +43,48 @@ int main()
         return 1;
     }
 
-    // Wait for a client and create a socket for that connection.
-    int client_fd = accept(server_fd, nullptr, nullptr);
-
-    if (client_fd == -1)
-    {
-        std::cerr << "Failed to accept client\n";
-        return 1;
-    }
-
-    std::cout << "Client connected\n";
-
-    // Receive one message from the connected client.
-    char buffer[1024]{};
-
 
     while (true)
     {
-        ssize_t bytes_received = recv(client_fd, buffer, sizeof(buffer) - 1, 0);
+        // Wait for a client and create a socket for that connection.
+        int client_fd = accept(server_fd, nullptr, nullptr);
 
-        if (bytes_received > 0)
+        if (client_fd == -1)
         {
-            buffer[bytes_received] = '\0';
-            std::cout << "Client says: " << buffer << '\n';
+            std::cerr << "Failed to accept client\n";
+            return 1;
         }
-        else if (bytes_received == 0)
+
+        std::cout << "Client connected\n";
+
+        // Receive messages from the connected client.
+        char buffer[1024]{};
+
+
+        while (true)
         {
-            std::cout << "Client disconnected\n";
-            break;
+            ssize_t bytes_received = recv(client_fd, buffer, sizeof(buffer) - 1, 0);
+
+            if (bytes_received > 0)
+            {
+                buffer[bytes_received] = '\0';
+                std::cout << "Client says: " << buffer << '\n';
+            }
+            else if (bytes_received == 0)
+            {
+                std::cout << "Client disconnected\n";
+                break;
+            }
+            else
+            {
+                std::cerr << "Failed to receive message\n";
+                break;
+            }
         }
-        else
-        {
-            std::cerr << "Failed to receive message\n";
-            break;
-        }
+
+        close(client_fd);
     }
-
-    close(client_fd);
+    
     close(server_fd);
-
     return 0;
 }
