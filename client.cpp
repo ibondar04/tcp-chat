@@ -3,6 +3,28 @@
 #include <unistd.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <thread>
+
+
+void receive_messages(int client_fd)
+{
+    char buffer[1024]{};
+
+    while (true)
+    {
+        ssize_t bytes_received = recv(client_fd, buffer, sizeof(buffer) - 1, 0);
+
+        if (bytes_received > 0)
+        {
+            buffer[bytes_received] = '\0';
+            std::cout << buffer << '\n';
+        }
+        else
+        {
+            break;
+        }
+    }
+}
 
 
 int main()
@@ -38,6 +60,10 @@ int main()
     }
 
     std::cout << "Connected to server\n";
+
+    // Receive server messages in a separate thread.
+    std::thread receive_thread(receive_messages, client_fd);
+    receive_thread.detach();
 
     std::string message;
 
