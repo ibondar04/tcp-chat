@@ -17,6 +17,19 @@ void handle_client(int client_fd)
 
     char buffer[1024]{};
 
+    // Receive the client's username first.
+    ssize_t username_bytes = recv(client_fd, buffer, sizeof(buffer) - 1, 0);
+
+    if (username_bytes <= 0)
+    {
+        std::cerr << "Failed to receive username\n";
+        close(client_fd);
+        return;
+    }
+
+    buffer[username_bytes] = '\0';
+    std::string username = buffer;
+
     // Receive messages from the connected client.
     while (true)
     {
@@ -25,7 +38,9 @@ void handle_client(int client_fd)
         if (bytes_received > 0)
         {
             buffer[bytes_received] = '\0';
-            std::cout << "Client says: " << buffer << '\n';
+
+            std::string full_message = username + ": " + buffer;
+            std::cout << full_message << '\n';
 
             {
                 std::lock_guard<std::mutex> lock(clients_mutex);
@@ -35,7 +50,7 @@ void handle_client(int client_fd)
                 {
                     if (other_client_fd != client_fd)
                     {
-                        send(other_client_fd, buffer, bytes_received, 0);
+                        send(other_client_fd, full_message.c_str(), full_message.size(), 0);
                     }
                 }
             }

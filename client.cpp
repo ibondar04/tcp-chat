@@ -31,6 +31,11 @@ int main()
 {
     std::cout << "Client starting...\n";
 
+    std::string username;
+
+    std::cout << "Enter username: ";
+    std::getline(std::cin, username);
+
     int client_fd = socket(AF_INET, SOCK_STREAM, 0);
 
     if (client_fd == -1)
@@ -60,6 +65,9 @@ int main()
     }
 
     std::cout << "Connected to server\n";
+
+    // Send the username as the first message to the server.
+    send(client_fd, username.c_str(), username.size(), 0);
 
     // Receive server messages in a separate thread.
     std::thread receive_thread(receive_messages, client_fd);
