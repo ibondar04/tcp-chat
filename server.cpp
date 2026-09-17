@@ -67,6 +67,16 @@ int main()
             buffer[bytes_received] = '\0';
             std::cout << "Client says: " << buffer << '\n';
         }
+        else if (bytes_received == 0)
+        {
+            std::cout << "Client disconnected\n";
+            break;
+        }
+        else
+        {
+            std::cerr << "Failed to receive message\n";
+            break;
+        }
     }
 
     close(client_fd);
