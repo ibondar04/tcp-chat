@@ -26,6 +26,19 @@ void handle_client(int client_fd)
         {
             buffer[bytes_received] = '\0';
             std::cout << "Client says: " << buffer << '\n';
+
+            {
+                std::lock_guard<std::mutex> lock(clients_mutex);
+
+                // Send the message to every other connected client.
+                for (int other_client_fd : clients)
+                {
+                    if (other_client_fd != client_fd)
+                    {
+                        send(other_client_fd, buffer, bytes_received, 0);
+                    }
+                }
+            }
         }
         else if (bytes_received == 0)
         {
