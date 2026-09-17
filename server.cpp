@@ -2,6 +2,40 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <netinet/in.h>
+#include <thread>
+
+
+void handle_client(int client_fd)
+{
+    std::cout << "Client connected\n";
+
+    char buffer[1024]{};
+
+    // Receive messages from the connected client.
+    while (true)
+    {
+        ssize_t bytes_received = recv(client_fd, buffer, sizeof(buffer) - 1, 0);
+
+        if (bytes_received > 0)
+        {
+            buffer[bytes_received] = '\0';
+            std::cout << "Client says: " << buffer << '\n';
+        }
+        else if (bytes_received == 0)
+        {
+            std::cout << "Client disconnected\n";
+            break;
+        }
+        else
+        {
+            std::cerr << "Failed to receive message\n";
+            break;
+        }
+    }
+
+    close(client_fd);
+}
+
 
 
 int main()
@@ -55,34 +89,8 @@ int main()
             return 1;
         }
 
-        std::cout << "Client connected\n";
-
-        // Receive messages from the connected client.
-        char buffer[1024]{};
-
-
-        while (true)
-        {
-            ssize_t bytes_received = recv(client_fd, buffer, sizeof(buffer) - 1, 0);
-
-            if (bytes_received > 0)
-            {
-                buffer[bytes_received] = '\0';
-                std::cout << "Client says: " << buffer << '\n';
-            }
-            else if (bytes_received == 0)
-            {
-                std::cout << "Client disconnected\n";
-                break;
-            }
-            else
-            {
-                std::cerr << "Failed to receive message\n";
-                break;
-            }
-        }
-
-        close(client_fd);
+        std::thread client_thread(handle_client, client_fd);
+        client_thread.detach();
     }
     
     close(server_fd);
