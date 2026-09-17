@@ -57,12 +57,16 @@ int main()
     // Receive one message from the connected client.
     char buffer[1024]{};
 
-    ssize_t bytes_received = recv(client_fd, buffer, sizeof(buffer) - 1, 0);
 
-    if (bytes_received > 0)
+    while (true)
     {
-        buffer[bytes_received] = '\0';
-        std::cout << "Client says: " << buffer << '\n';
+        ssize_t bytes_received = recv(client_fd, buffer, sizeof(buffer) - 1, 0);
+
+        if (bytes_received > 0)
+        {
+            buffer[bytes_received] = '\0';
+            std::cout << "Client says: " << buffer << '\n';
+        }
     }
 
     close(client_fd);

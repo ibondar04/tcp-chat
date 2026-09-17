@@ -39,10 +39,17 @@ int main()
 
     std::cout << "Connected to server\n";
 
-    std::string message = "Hello from client";
+    std::string message;
 
-    // Send one message to the server.
-    send(client_fd, message.c_str(), message.size(), 0);
+
+    while (true)
+    {
+        std::getline(std::cin, message);
+
+        // Send the typed message to the server.
+        send(client_fd, message.c_str(), message.size(), 0);
+    }
+    
 
     return 0;
 }
