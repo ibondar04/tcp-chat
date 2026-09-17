@@ -3,6 +3,12 @@
 #include <unistd.h>
 #include <netinet/in.h>
 #include <thread>
+#include <vector>
+#include <mutex>
+
+
+std::vector<int> clients;
+std::mutex clients_mutex;
 
 
 void handle_client(int client_fd)
@@ -33,9 +39,21 @@ void handle_client(int client_fd)
         }
     }
 
+    {
+        std::lock_guard<std::mutex> lock(clients_mutex);
+
+        for (auto it = clients.begin(); it != clients.end(); ++it)
+        {
+            if (*it == client_fd)
+            {
+                clients.erase(it);
+                break;
+            }
+        }
+    }
+
     close(client_fd);
 }
-
 
 
 int main()
@@ -87,6 +105,11 @@ int main()
         {
             std::cerr << "Failed to accept client\n";
             return 1;
+        }
+
+        {
+            std::lock_guard<std::mutex> lock(clients_mutex);
+            clients.push_back(client_fd);
         }
 
         std::thread client_thread(handle_client, client_fd);
