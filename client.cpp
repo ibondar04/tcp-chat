@@ -86,7 +86,13 @@ int main()
         }
 
         // Send the typed message to the server.
-        send(client_fd, message.c_str(), message.size(), 0);
+        ssize_t bytes_sent = send(client_fd, message.c_str(), message.size(), 0);
+
+        if (bytes_sent == -1)
+        {
+            std::cerr << "Failed to send message\n";
+            break;
+        }
     }
 
     close(client_fd);

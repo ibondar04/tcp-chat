@@ -50,7 +50,12 @@ void handle_client(int client_fd)
                 {
                     if (other_client_fd != client_fd)
                     {
-                        send(other_client_fd, full_message.c_str(), full_message.size(), 0);
+                        ssize_t bytes_sent = send(other_client_fd, full_message.c_str(), full_message.size(), 0);
+
+                        if (bytes_sent == -1)
+                        {
+                            std::cerr << "Failed to send message to client\n";
+                        }
                     }
                 }
             }
