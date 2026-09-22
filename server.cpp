@@ -11,6 +11,21 @@ std::vector<int> clients;
 std::mutex clients_mutex;
 
 
+void remove_client(int client_fd)
+{
+    std::lock_guard<std::mutex> lock(clients_mutex);
+
+    for (auto it = clients.begin(); it != clients.end(); ++it)
+    {
+        if (*it == client_fd)
+        {
+            clients.erase(it);
+            break;
+        }
+    }
+}
+
+
 void handle_client(int client_fd)
 {
     std::cout << "Client connected\n";
@@ -23,6 +38,7 @@ void handle_client(int client_fd)
     if (username_bytes <= 0)
     {
         std::cerr << "Failed to receive username\n";
+        remove_client(client_fd);
         close(client_fd);
         return;
     }
@@ -71,20 +87,8 @@ void handle_client(int client_fd)
             break;
         }
     }
-
-    {
-        std::lock_guard<std::mutex> lock(clients_mutex);
-
-        for (auto it = clients.begin(); it != clients.end(); ++it)
-        {
-            if (*it == client_fd)
-            {
-                clients.erase(it);
-                break;
-            }
-        }
-    }
-
+    
+    remove_client(client_fd);
     close(client_fd);
 }
 
