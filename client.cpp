@@ -19,8 +19,14 @@ void receive_messages(int client_fd)
             buffer[bytes_received] = '\0';
             std::cout << buffer << '\n';
         }
+        else if (bytes_received == 0)
+        {
+            std::cout << "Disconnected from server\n";
+            break;
+        }
         else
         {
+            std::cerr << "Failed to receive message\n";
             break;
         }
     }
@@ -61,13 +67,21 @@ int main()
                 sizeof(server_address)) == -1)
     {
         std::cerr << "Failed to connect to server\n";
+        close(client_fd);
         return 1;
     }
 
     std::cout << "Connected to server\n";
 
     // Send the username as the first message to the server.
-    send(client_fd, username.c_str(), username.size(), 0);
+    ssize_t username_bytes_sent = send(client_fd, username.c_str(), username.size(), 0);
+
+    if (username_bytes_sent == -1)
+    {
+        std::cerr << "Failed to send username\n";
+        close(client_fd);
+        return 1;
+    }
 
     // Receive server messages in a separate thread.
     std::thread receive_thread(receive_messages, client_fd);
