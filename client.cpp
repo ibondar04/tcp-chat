@@ -80,9 +80,16 @@ int main()
     {
         std::getline(std::cin, message);
 
+        if (message == "/quit")
+        {
+            break;
+        }
+
         // Send the typed message to the server.
         send(client_fd, message.c_str(), message.size(), 0);
     }
+
+    close(client_fd);
     
 
     return 0;
